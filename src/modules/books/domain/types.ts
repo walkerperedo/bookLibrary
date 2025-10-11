@@ -5,4 +5,5 @@ export type Book = {
   year?: number
   lang?: string
   coverUrl?: string
+  editions?: number
 }

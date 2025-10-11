@@ -9,5 +9,6 @@ export function mapOLSearchToBooks(json: any): Book[] {
     year: d.first_publish_year,
     lang: d.language?.[0],
     coverUrl: coverUrl(d.cover_i, 'M'),
+    editions: d.edition_count ?? d.editions ?? 0,
   }))
 }
