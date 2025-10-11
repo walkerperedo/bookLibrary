@@ -3,6 +3,67 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --radius: 10px;
+}
+
+
+body {
+  background-color: #fff;
+  color: #1e293b; /* slate-800 */
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  border: 1px solid #cbd5e1; /* slate-300 */
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+.btn:hover {
+  background-color: #f8fafc; /* slate-50 */
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #fff;
+  background-color: #3b82f6; /* brand-500, adjust as needed */
+  transition: background 0.2s;
+}
+.btn-primary:hover {
+  background-color: #2563eb; /* brand-600, adjust as needed */
+}
+
+.input {
+  width: 100%;
+  border-radius: 50px;
+  border: 1px solid #cbd5e1; /* slate-300 */
+  padding: 0.5rem 1rem;
+  outline: none;
+  transition: box-shadow 0.2s;
+}
+.input:focus {
+  box-shadow: 0 0 0 2px #93c5fd; /* brand-300, adjust as needed */
+}
+
+.card {
+  background-color: #fff;
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);
+  transition: box-shadow 0.2s;
+  border: 1px solid #f1f5f9; /* slate-100 */
+}
+.card:hover {
+  box-shadow: 0 4px 6px 0 rgba(0,0,0,0.10);
 }
 
 @theme inline {
@@ -15,7 +76,7 @@
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
-    --foreground: #ededed;
+    --foreground: #171717;
   }
 }
 
