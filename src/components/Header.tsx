@@ -14,12 +14,12 @@ export default function Header() {
   const user = useUser((s) => s.user)
 
   useEffect(() => {
-    const currentQ = params.get('q') ?? '';
+    const currentQ = params.get('q') ?? ''
 
-    if (!params.has('q') && debounced.trim().length === 0) return;
+    if (!params.has('q') && debounced.trim().length === 0) return
 
-    if (debounced.trim() === currentQ.trim()) return;
-    
+    if (debounced.trim() === currentQ.trim()) return
+
     const sp = new URLSearchParams(params)
 
     if (debounced.trim().length === 0) {
@@ -59,6 +59,9 @@ export default function Header() {
           </Link>
           <Link href="/loans" className="btn">
             My books
+          </Link>
+          <Link href="/reservations" className="btn">
+            Reservations
           </Link>
           {user ? (
             <span className="text-sm">Hi, {user.name.split(' ')[0]}</span>
