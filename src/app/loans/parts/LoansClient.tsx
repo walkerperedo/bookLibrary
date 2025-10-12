@@ -2,9 +2,11 @@
 import Image from 'next/image'
 import { daysLeft, fmt } from '@/lib/date'
 import { useLoans } from '@/modules/loans/store/loan.store'
+import { useUser } from '@/modules/users/store/user.store'
 
 export default function LoansClient() {
-  const loans = useLoans((s) => s.loans)
+  const userKey = useUser((s) => (s.user ? `user:${s.user.id}` : 'guest'))
+  const loans = useLoans((s) => s.byUser[userKey] ?? {})
   const renew = useLoans((s) => s.renew)
   const ret = useLoans((s) => s.return)
   const list = Object.values(loans).filter((l) => !l.returnedAt)

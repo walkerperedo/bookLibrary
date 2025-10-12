@@ -2,6 +2,8 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { Book } from '@/modules/books/domain/types'
+import { getUserKey } from '@/lib/userKey'
+import { useInventory } from '@/modules/inventory/store/inventory.store'
 
 export type Loan = {
   id: string
@@ -13,10 +15,11 @@ export type Loan = {
 }
 
 type LoansState = {
+  byUser: Record<string, Record<string, Loan>>
   loans: Record<string, Loan>
-  issue: (b: Pick<Book, 'id' | 'title' | 'coverUrl'>, days?: number) => void
-  renew: (bookId: string, extraDays?: number) => void
-  return: (bookId: string) => void
+  issue: (b: Pick<Book, 'id' | 'title' | 'coverUrl'>, days?: number) => boolean
+  renew: (bookId: string, extraDays?: number) => boolean
+  return: (bookId: string) => boolean
   isOnLoan: (bookId: string) => boolean
   clearAll: () => void // solo para testing
 }
@@ -24,36 +27,45 @@ type LoansState = {
 export const useLoans = create<LoansState>()(
   persist(
     (set, get) => ({
+      byUser: {},
       loans: {},
-      issue: (b, days = 14) =>
+      issue: (b, days = 14) => {
+        const k = getUserKey()
+        // try to borrow globally
+        const ok = useInventory.getState().borrow({ id: b.id }, k, days)
+        if (!ok) return false
+        // record into personal history
+        const inv = useInventory.getState().items[b.id]!
         set((s) => {
-          if (s.loans[b.id] && !s.loans[b.id].returnedAt) return s // ya prestado
-          const now = new Date()
-          const due = new Date(now)
-          due.setDate(now.getDate() + days)
-          const loan: Loan = {
-            id: b.id,
-            title: b.title,
-            coverUrl: b.coverUrl,
-            loanedAt: now.toISOString(),
-            dueAt: due.toISOString(),
-          }
-          return { loans: { ...s.loans, [b.id]: loan } }
-        }),
-      renew: (bookId, extraDays = 7) =>
+          const m = { ...(s.byUser[k] ?? {}) }
+          m[b.id] = { id: b.id, title: b.title, coverUrl: b.coverUrl, loanedAt: inv.loanedAt!, dueAt: inv.dueAt! }
+          return { byUser: { ...s.byUser, [k]: m } }
+        })
+        return true
+      },
+      renew: (id, extraDays = 7) => {
+        const k = getUserKey()
+        const ok = useInventory.getState().renew(id, k, extraDays)
+        if (!ok) return false
+        const inv = useInventory.getState().items[id]!
         set((s) => {
-          const cur = s.loans[bookId]
-          if (!cur || cur.returnedAt) return s
-          const due = new Date(cur.dueAt)
-          due.setDate(due.getDate() + extraDays)
-          return { loans: { ...s.loans, [bookId]: { ...cur, dueAt: due.toISOString() } } }
-        }),
-      return: (bookId) =>
+          const m = { ...(s.byUser[k] ?? {}) }
+          if (m[id]) m[id] = { ...m[id], dueAt: inv.dueAt! }
+          return { byUser: { ...s.byUser, [k]: m } }
+        })
+        return true
+      },
+      return: (id) => {
+        const k = getUserKey()
+        const ok = useInventory.getState().returnBook(id, k)
+        if (!ok) return false
         set((s) => {
-          const cur = s.loans[bookId]
-          if (!cur || cur.returnedAt) return s
-          return { loans: { ...s.loans, [bookId]: { ...cur, returnedAt: new Date().toISOString() } } }
-        }),
+          const m = { ...(s.byUser[k] ?? {}) }
+          if (m[id] && !m[id].returnedAt) m[id] = { ...m[id], returnedAt: new Date().toISOString() }
+          return { byUser: { ...s.byUser, [k]: m } }
+        })
+        return true
+      },
       isOnLoan: (bookId) => {
         const l = get().loans[bookId]
         return !!l && !l.returnedAt

@@ -3,9 +3,12 @@ import Image from 'next/image'
 import { useReservations } from '@/modules/reservations/store/reservation.store'
 import { useLoans } from '@/modules/loans/store/loan.store'
 import { fmt } from '@/lib/date'
+import { useUser } from '@/modules/users/store/user.store'
 
 export default function ReservationsClient() {
-  const reservations = useReservations((s) => s.reservations)
+  const userKey = useUser((s) => (s.user ? `user:${s.user.id}` : 'guest'))
+  const reservations = useReservations((s) => s.byUser[userKey] ?? {})
+
   const cancel = useReservations((s) => s.cancel)
   const fulfill = useReservations((s) => s.fulfill)
   const issue = useLoans((s) => s.issue)

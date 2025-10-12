@@ -1,4 +1,5 @@
 'use client'
+import { getUserKey } from '@/lib/userKey'
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
@@ -17,37 +18,41 @@ type WishlistState = {
   list: () => WishlistItem[]
   has: (id: string) => boolean
   clearAll: () => void
+  byUser: Record<string, Record<string, WishlistItem>>
 }
 
 export const useWishlist = create<WishlistState>()(
   persist(
     (set, get) => ({
       items: {},
+      byUser: {},
       add: (b) =>
         set((s) => {
-          if (s.items[b.id]) return s
+          const k = getUserKey()
+          const m = s.byUser[k] ?? {}
+          if (m[b.id]) return s
           const w: WishlistItem = { ...b, addedAt: new Date().toISOString() }
-          return { items: { ...s.items, [b.id]: w } }
+          return { byUser: { ...s.byUser, [k]: { ...m, [b.id]: w } } };
         }),
       remove: (id) =>
         set((s) => {
-          const { [id]: _, ...rest } = s.items
-          return { items: rest }
+          const k = getUserKey();
+          const m = { ...(s.byUser[k] ?? {}) };
+          delete m[id];
+          return { byUser: { ...s.byUser, [k]: m } };
         }),
       toggle: (b) =>
         set((s) => {
-          const exists = !!s.items[b.id]
-          if (exists) {
-            const { [b.id]: _, ...rest } = s.items
-            return { items: rest }
-          }
-          const w: WishlistItem = { ...b, addedAt: new Date().toISOString() }
-          return { items: { ...s.items, [b.id]: w } }
+          const k = getUserKey();
+          const m = { ...(s.byUser[k] ?? {}) };
+          if (m[b.id]) { delete m[b.id]; return { byUser: { ...s.byUser, [k]: m } }; }
+          m[b.id] = { ...b, addedAt: new Date().toISOString() };
+          return { byUser: { ...s.byUser, [k]: m } };
         }),
       list: () => Object.values(get().items).sort((a, b) => b.addedAt.localeCompare(a.addedAt)),
       has: (id) => !!get().items[id],
       clearAll: () => set({ items: {} }),
     }),
-    { name: 'wishlist:v1' }
+    { name: 'wishlist:v2' }
   )
 )

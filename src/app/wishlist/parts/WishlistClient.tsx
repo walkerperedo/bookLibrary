@@ -8,13 +8,16 @@ import { useReservations } from '@/modules/reservations/store/reservation.store'
 import { computeAvailability } from '@/modules/books/domain/availability'
 import { ensureNotifyPermission } from '@/lib/notify'
 import { useMemo } from 'react'
+import { useUser } from '@/modules/users/store/user.store'
 
 function workIdFromKey(id: string) {
   return id.startsWith('/works/') ? id.slice('/works/'.length) : id
 }
 
 export default function WishlistClient() {
-  const itemsMap = useWishlist((s) => s.items)
+  const userKey = useUser((s) => (s.user ? `user:${s.user.id}` : 'guest'))
+  const itemsMap = useWishlist((s) => s.byUser[userKey] ?? {})
+  
   const remove = useWishlist((s) => s.remove)
 
   const issue = useLoans((s) => s.issue)
@@ -25,10 +28,10 @@ export default function WishlistClient() {
   const isReservedActive = useReservations((s) => s.isReservedActive)
 
   const items = useMemo(() => {
-    const arr = Object.values(itemsMap);
-    arr.sort((a, b) => b.addedAt.localeCompare(a.addedAt));
-    return arr;
-  }, [itemsMap]);
+    const arr = Object.values(itemsMap)
+    arr.sort((a, b) => b.addedAt.localeCompare(a.addedAt))
+    return arr
+  }, [itemsMap])
 
   async function enableNotifications() {
     const perm = await ensureNotifyPermission()

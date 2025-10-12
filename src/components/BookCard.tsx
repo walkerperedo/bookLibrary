@@ -9,6 +9,8 @@ import Link from 'next/link'
 import { useWishlist } from '@/modules/wishlist/store/wishlist.store'
 import { useReading } from '@/modules/reading/store/reading.store'
 import { useHydrated } from '@/hooks/useHydrated'
+import { useUser } from '@/modules/users/store/user.store'
+import { useInventory } from '@/modules/inventory/store/inventory.store'
 
 function workIdFromKey(id: string) {
   return id.startsWith('/works/') ? id.replace('/works/', '') : id
@@ -16,25 +18,27 @@ function workIdFromKey(id: string) {
 
 export default function BookCard({ b }: { b: Book }) {
   const hydrated = useHydrated()
+  const userKey = useUser((s) => (s.user ? `user:${s.user.id}` : 'guest'))
 
-  const hasWish = useWishlist((s) => Boolean(s.items[b.id]));
+  const hasWish = useWishlist((s) => Boolean(s.byUser[userKey]?.[b.id]))
   const toggleWish = useWishlist((s) => s.toggle)
 
-  const isOnLoan = useLoans((s) => Boolean(s.loans[b.id] && !s.loans[b.id].returnedAt))
+  const currentLoan = useLoans((s) => (s.byUser[userKey] ?? {})[b.id])
   const issue = useLoans((s) => s.issue)
   const renew = useLoans((s) => s.renew)
   const ret = useLoans((s) => s.return)
-  const currentLoan = useLoans((s) => s.loans[b.id]);
 
   const isReserved = useReservations((s) => {
-    const r = s.reservations[b.id]
+    const r = (s.byUser[userKey] ?? {})[b.id]
     return !!r && !r.cancelledAt && !r.fulfilledAt
   })
   const reserve = useReservations((s) => s.reserve)
 
-  const setReadingStatus = useReading((s) => s.setStatus)
+  const inv = useInventory((s) => s.items[b.id]); // for live dueAt/owner display
+  const availability = hydrated ? computeAvailability(b.id, userKey) : 'AVAILABLE';
+  const dueAt = inv?.dueAt || "";
 
-  const availability = computeAvailability(b.id, isOnLoan)
+  const setReadingStatus = useReading((s) => s.setStatus)
 
   const href = `/books/${workIdFromKey(b.id)}`
 
@@ -52,9 +56,9 @@ export default function BookCard({ b }: { b: Book }) {
           ) : (
             <div className="absolute inset-0 grid place-items-center text-slate-400 text-sm">No cover</div>
           )}
-          {availability !== 'AVAILABLE' && (
+          {hydrated && availability !== 'AVAILABLE' && (
             <span className="absolute top-2 right-2 text-xs bg-black/70 text-white px-2 py-1 rounded-full">
-              {availability === 'ON_LOAN_MINE' ? `Due in ${daysLeft(currentLoan!.dueAt)}d` : 'On loan'}
+              {availability === 'ON_LOAN_MINE' ? `Due in ${daysLeft(dueAt)}d` : 'On loan'}
             </span>
           )}
         </div>
@@ -67,13 +71,14 @@ export default function BookCard({ b }: { b: Book }) {
         <button className="btn flex-1" onClick={onToggleWishlist}>
           {hydrated && hasWish ? 'In wishlist' : 'Wishlist'}
         </button>
-        {availability === 'AVAILABLE' && (
+
+        {hydrated && availability === 'AVAILABLE' && (
           <button className="btn-primary flex-1" onClick={() => issue(b)}>
             Borrow
           </button>
         )}
 
-        {availability === 'ON_LOAN_MINE' && (
+        {hydrated && availability === 'ON_LOAN_MINE' && (
           <>
             <button className="btn flex-1" onClick={() => renew(b.id)}>
               Renew +7d
@@ -84,14 +89,13 @@ export default function BookCard({ b }: { b: Book }) {
           </>
         )}
 
-        {availability === 'ON_LOAN_EXTERNAL' && (
+        {hydrated && availability === 'ON_LOAN_EXTERNAL' && (
           <button
             className="btn flex-1"
             onClick={() => !isReserved && reserve(b)}
             disabled={isReserved}
-            title={isReserved ? 'Already reserved' : 'Reserve'}
           >
-            {isReserved ? 'Reserved' : 'Reserve'}
+            <span suppressHydrationWarning>{isReserved ? 'Reserved' : 'Reserve'}</span>
           </button>
         )}
       </div>
