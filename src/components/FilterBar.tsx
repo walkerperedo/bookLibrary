@@ -30,8 +30,11 @@ export default function FilterBar() {
     <div className="card p-3 mb-4">
       <div className="grid sm:grid-cols-3 gap-3">
         <div>
-          <label className="block text-xs mb-1">Author</label>
+          <label htmlFor="filter-author" className="block text-xs mb-1">
+            Author
+          </label>
           <input
+            id="filter-author"
             className="input"
             placeholder="e.g. J.K. Rowling"
             value={author}
@@ -42,8 +45,11 @@ export default function FilterBar() {
         </div>
 
         <div>
-          <label className="block text-xs mb-1">Category</label>
+          <label htmlFor="filter-category" className="block text-xs mb-1">
+            Category
+          </label>
           <select
+            id="filter-category"
             className="input"
             value={category}
             onChange={(e) => {
@@ -60,8 +66,11 @@ export default function FilterBar() {
         </div>
 
         <div>
-          <label className="block text-xs mb-1">Sort by</label>
+          <label htmlFor="filter-sort" className="block text-xs mb-1">
+            Sort by
+          </label>
           <select
+            id="filter-sort"
             className="input"
             value={sort}
             onChange={(e) => {
