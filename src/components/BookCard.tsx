@@ -18,28 +18,29 @@ function workIdFromKey(id: string) {
 
 export default function BookCard({ b }: { b: Book }) {
   const hydrated = useHydrated()
-  const userKey = useUser((s) => (s.user ? `user:${s.user.id}` : 'guest'))
 
-  const hasWish = useWishlist((s) => Boolean(s.byUser[userKey]?.[b.id]))
+  const userKeyRaw = useUser((s) => (s.user ? `user:${s.user.id}` : 'guest'))
+  const userKey = hydrated ? userKeyRaw : 'guest'
+
+  const hasWishRaw = useWishlist((s) => Boolean((s.byUser[userKey] ?? {})[b.id]))
+  const hasWish = hydrated ? hasWishRaw : false
   const toggleWish = useWishlist((s) => s.toggle)
 
-  const currentLoan = useLoans((s) => (s.byUser[userKey] ?? {})[b.id])
   const issue = useLoans((s) => s.issue)
   const renew = useLoans((s) => s.renew)
   const ret = useLoans((s) => s.return)
 
-  const isReserved = useReservations((s) => {
-    const r = (s.byUser[userKey] ?? {})[b.id]
-    return !!r && !r.cancelledAt && !r.fulfilledAt
-  })
+  const resEntry = useReservations((s) => s.byUser[userKey]?.[b.id])
+  const isReservedRaw = !!resEntry && !resEntry.cancelledAt && !resEntry.fulfilledAt
+  const isReserved = hydrated ? isReservedRaw : false
   const reserve = useReservations((s) => s.reserve)
 
-  const inv = useInventory((s) => s.items[b.id]); // for live dueAt/owner display
-  const availability = hydrated ? computeAvailability(b.id, userKey) : 'AVAILABLE';
-  const dueAt = inv?.dueAt || "";
+  const inv = useInventory((s) => s.items[b.id])
+  const dueAt = inv?.dueAt || ''
+
+  const availability = hydrated ? computeAvailability(b.id, userKey) : 'AVAILABLE'
 
   const setReadingStatus = useReading((s) => s.setStatus)
-
   const href = `/books/${workIdFromKey(b.id)}`
 
   function onToggleWishlist() {
@@ -58,18 +59,20 @@ export default function BookCard({ b }: { b: Book }) {
           )}
           {hydrated && availability !== 'AVAILABLE' && (
             <span className="absolute top-2 right-2 text-xs bg-black/70 text-white px-2 py-1 rounded-full">
-              {availability === 'ON_LOAN_MINE' ? `Due in ${daysLeft(dueAt)}d` : 'On loan'}
+              {availability === 'ON_LOAN_MINE' && dueAt ? `Due in ${daysLeft(dueAt)}d` : 'On loan'}
             </span>
           )}
         </div>
       </Link>
+
       <Link href={href}>
         <h3 className="mt-2 font-semibold text-sm line-clamp-2">{b.title}</h3>
       </Link>
       <p className="text-xs text-slate-500 line-clamp-1">{b.authors?.[0] ?? 'Unknown'}</p>
+
       <div className="mt-2 flex gap-2">
         <button className="btn flex-1" onClick={onToggleWishlist}>
-          {hydrated && hasWish ? 'In wishlist' : 'Wishlist'}
+          <span suppressHydrationWarning>{hydrated && hasWish ? 'In wishlist' : 'Wishlist'}</span>
         </button>
 
         {hydrated && availability === 'AVAILABLE' && (
@@ -90,11 +93,7 @@ export default function BookCard({ b }: { b: Book }) {
         )}
 
         {hydrated && availability === 'ON_LOAN_EXTERNAL' && (
-          <button
-            className="btn flex-1"
-            onClick={() => !isReserved && reserve(b)}
-            disabled={isReserved}
-          >
+          <button className="btn flex-1" onClick={() => !isReserved && reserve(b)} disabled={isReserved}>
             <span suppressHydrationWarning>{isReserved ? 'Reserved' : 'Reserve'}</span>
           </button>
         )}

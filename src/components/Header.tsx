@@ -12,6 +12,7 @@ export default function Header() {
   const [q, setQ] = useState(params.get('q') ?? '')
   const debounced = useDebounce(q, 300)
   const user = useUser((s) => s.user)
+  const logout = useUser((s) => s.logout)
 
   useEffect(() => {
     const currentQ = params.get('q') ?? ''
@@ -64,7 +65,12 @@ export default function Header() {
             Reservations
           </Link>
           {user ? (
-            <span className="text-sm">Hi, {user.name.split(' ')[0]}</span>
+            <>
+              <span className="text-sm">Hi, {user.name.split(' ')[0]}</span>
+              <button className="btn" onClick={logout}>
+                Logout
+              </button>
+            </>
           ) : (
             <Link href="/login" className="btn">
               Login

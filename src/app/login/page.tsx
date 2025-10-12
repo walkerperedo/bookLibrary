@@ -1,31 +1,40 @@
 'use client'
 
-import { useState } from 'react'
-import { listUsers } from '@/modules/users/services/platzi'
+import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useUser } from '@/modules/users/store/user.store'
-import { useRouter } from 'next/navigation'
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('')
+  const [email, setEmail] = useState('john@mail.com')
+  const [password, setPassword] = useState('changeme')
+
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const login = useUser((s) => s.login)
   const router = useRouter()
+  const params = useSearchParams()
+  const login = useUser((s) => s.loginCreds)
+  const user = useUser((s) => s.user)
+  const hydrate = useUser((s) => s.hydrateFromSession)
+
+  useEffect(() => {
+    hydrate()
+  }, [hydrate])
+
+  useEffect(() => {
+    if (user) {
+      const returnTo = params.get('returnTo') ?? '/books'
+      router.replace(returnTo)
+    }
+  }, [user, router, params])
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
     setError(null)
     try {
-      const users = await listUsers()
-      const found = users.find((u) => u.email.toLowerCase() === email.toLowerCase() || u.name.toLowerCase() === email.toLowerCase())
-      if (!found) setError('User not found. Try any email/name from Platzi Fake API.')
-      else {
-        login(found)
-        router.push('/books')
-      }
+      await login(email, password)
     } catch (err: any) {
-      setError('Login failed. ' + (err?.message ?? ''))
+      setError('Invalid credentials')
     } finally {
       setLoading(false)
     }
@@ -39,14 +48,18 @@ export default function LoginPage() {
         </div>
         <form onSubmit={onSubmit} className="card p-6 space-y-4">
           <div>
-            <label className="block text-sm mb-1">Email or Name</label>
+            <label className="block text-sm mb-1">Email</label>
             <input className="input" placeholder="e.g. john@mail.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+          </div>
+          <div>
+            <label className="block text-sm mb-1">Password</label>
+            <input className="input" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
           </div>
           {error && <p className="text-sm text-red-600">{error}</p>}
           <button className="btn-primary w-full" disabled={loading}>
             {loading ? 'Logging in…' : 'Log in'}
           </button>
-          <p className="text-xs text-slate-500 text-center">Demo login against Platzi Users API.</p>
+          <p className="text-xs text-slate-500 text-center">Demo john@mail.com / changeme.</p>
         </form>
       </div>
     </main>
