@@ -5,6 +5,11 @@ import { useLoans } from '@/modules/loans/store/loan.store'
 import { useReservations } from '@/modules/reservations/store/reservation.store'
 import { computeAvailability } from '@/modules/books/domain/availability'
 import { daysLeft } from '@/lib/date'
+import Link from 'next/link'
+
+function workIdFromKey(id: string) {
+  return id.startsWith('/works/') ? id.replace('/works/', '') : id;
+}
 
 export default function BookCard({ b }: { b: Book }) {
   const issue = useLoans((s) => s.issue)
@@ -17,8 +22,11 @@ export default function BookCard({ b }: { b: Book }) {
 
   const availability = computeAvailability(b.id, isOnLoan)
   const currentLoan = useLoans((s) => s.loans[b.id])
+
+  const href = `/books/${workIdFromKey(b.id)}`
   return (
     <div className="card p-3">
+      <Link href={href} className="block">
       <div className="aspect-[2/3] relative rounded-lg overflow-hidden bg-slate-100">
         {b.coverUrl ? (
           <Image src={b.coverUrl} alt={b.title} fill sizes="(max-width:768px) 50vw, 20vw" className="object-cover" />
@@ -31,7 +39,10 @@ export default function BookCard({ b }: { b: Book }) {
           </span>
         )}
       </div>
+      </Link>
+      <Link href={href}>
       <h3 className="mt-2 font-semibold text-sm line-clamp-2">{b.title}</h3>
+      </Link>
       <p className="text-xs text-slate-500 line-clamp-1">{b.authors?.[0] ?? 'Unknown'}</p>
       <div className="mt-2 flex gap-2">
         {availability === 'AVAILABLE' && (
