@@ -10,12 +10,30 @@ export const revalidate = 60
 
 type params = { q?: string; author?: string; category?: string; sort?: SortKey; page?: string }
 
+async function resolveSearchParams(input: any) {
+  const sp = typeof input?.then === 'function' ? await input : input;
+  return {
+    get(key: string) {
+      if (sp && typeof sp.get === 'function') return sp.get(key);
+      return sp?.[key];
+    },
+  };
+}
+
 export default async function BooksPage({ searchParams }: { searchParams: params }) {
-  const q = (searchParams.q ?? '').trim()
-  const author = (searchParams.author ?? '').trim()
-  const category = (searchParams.category ?? '').trim()
-  const sort = (searchParams.sort as SortKey) ?? 'relevance'
-  const page = Number(searchParams.page ?? '1')
+  const sp = await resolveSearchParams(searchParams);
+  
+  const rawQ = (sp.get('q') ?? '').toString();
+  const rawAuthor = (sp.get('author') ?? '').toString();
+  const rawCategory = (sp.get('category') ?? '').toString();
+  const rawSort = (sp.get('sort') ?? 'relevance').toString();
+  const rawPage = (sp.get('page') ?? '1').toString();
+
+  const q = rawQ.trim();
+  const author = rawAuthor.trim();
+  const category = rawCategory.trim();
+  const sort = (rawSort as SortKey) || 'relevance';
+  const page = Number(rawPage || '1');
 
   const json = await searchBooksAdvanced({
     q: q || undefined,
