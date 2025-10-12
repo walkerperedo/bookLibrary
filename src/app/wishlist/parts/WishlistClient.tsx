@@ -64,7 +64,7 @@ export default function WishlistClient() {
 
       <ul className="grid md:grid-cols-2 gap-4">
         {items.map((it) => {
-          const available = computeAvailability(it.id, isOnLoan(it.id))
+          const available = computeAvailability(it.id, userKey)
           const href = `/books/${workIdFromKey(it.id)}`
 
           return (

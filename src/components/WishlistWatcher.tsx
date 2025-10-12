@@ -5,6 +5,7 @@ import { useLoans } from '@/modules/loans/store/loan.store'
 import { computeAvailability, type Availability } from '@/modules/books/domain/availability'
 import { ensureNotifyPermission, notify } from '@/lib/notify'
 import { useWishlist } from '@/modules/wishlist/store/wishlist.store'
+import { getUserKey } from '@/lib/userKey'
 
 const KEY = 'wishlist:availability:v1'
 
@@ -32,7 +33,6 @@ export default function WishlistWatcher() {
   }, [])
 
   useEffect(() => {
-    let timer: any
 
     async function check() {
       if (Object.keys(wishlist).length > 0) {
@@ -41,7 +41,7 @@ export default function WishlistWatcher() {
 
       const nextMap: AvMap = { ...prevRef.current }
       for (const it of Object.values(wishlist)) {
-        const curr = computeAvailability(it.id, isOnLoan(it.id))
+        const curr = computeAvailability(it.id, getUserKey())
         const prev = prevRef.current[it.id]
 
         if (prev === 'ON_LOAN_EXTERNAL' && curr === 'AVAILABLE') {
@@ -61,7 +61,7 @@ export default function WishlistWatcher() {
 
     check()
 
-    timer = setInterval(check, 60_000)
+    const timer = setInterval(check, 60_000)
 
     function onVis() {
       if (document.visibilityState === 'visible') check()
