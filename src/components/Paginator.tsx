@@ -15,11 +15,11 @@ export default function Paginator({ hasNext }: { hasNext: boolean }) {
 
   return (
     <div className="flex items-center justify-between mt-4">
-      <button className="btn" onClick={() => go(page - 1)} disabled={page <= 1}>
+      <button className="btn dark" onClick={() => go(page - 1)} disabled={page <= 1}>
         Previous
       </button>
       <div className="text-sm text-slate-600">Page {page}</div>
-      <button className="btn" onClick={() => go(page + 1)} disabled={!hasNext}>
+      <button className="btn dark" onClick={() => go(page + 1)} disabled={!hasNext}>
         Next
       </button>
     </div>

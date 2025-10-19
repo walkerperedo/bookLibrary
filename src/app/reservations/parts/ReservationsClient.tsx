@@ -4,16 +4,29 @@ import { useReservations } from '@/modules/reservations/store/reservation.store'
 import { useLoans } from '@/modules/loans/store/loan.store'
 import { fmt } from '@/lib/date'
 import { useUser } from '@/modules/users/store/user.store'
+import { useHydrated } from '@/hooks/useHydrated'
+import { useMemo } from 'react'
 
 export default function ReservationsClient() {
-  const userKey = useUser((s) => (s.user ? `user:${s.user.id}` : 'guest'))
-  const reservations = useReservations((s) => s.byUser[userKey] ?? {})
+  const hydrated = useHydrated()
+
+  const userKeyRaw = useUser((s) => (s.user ? `user:${s.user.id}` : 'guest'))
+  const userKey = hydrated ? userKeyRaw : 'guest'
+
+  const userReservationsMap = useReservations((s) => s.byUser[userKey])
+
+  const list = useMemo(() => {
+    const m = userReservationsMap ?? {}
+    return Object.values(m).filter((r) => !r.cancelledAt && !r.fulfilledAt)
+  }, [userReservationsMap])
 
   const cancel = useReservations((s) => s.cancel)
   const fulfill = useReservations((s) => s.fulfill)
   const issue = useLoans((s) => s.issue)
 
-  const list = Object.values(reservations).filter((r) => !r.cancelledAt && !r.fulfilledAt)
+  if (!hydrated) {
+    return <p className="text-slate-500">Loading…</p>
+  }
 
   if (list.length === 0) return <p className="text-slate-500">You have no active reservations.</p>
 

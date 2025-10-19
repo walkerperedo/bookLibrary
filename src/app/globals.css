@@ -66,6 +66,13 @@ body {
   box-shadow: 0 4px 6px 0 rgba(0,0,0,0.10);
 }
 
+button.dark, a.dark {
+  color: white
+}
+button.dark:hover, a.dark:hover {
+  color: black
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

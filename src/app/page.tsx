@@ -1,6 +1,24 @@
+'use client'
+import { useUser } from '@/modules/users/store/user.store'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
 
 export default function Splash() {
+  const user = useUser((s) => s.user)
+  const hydrate = useUser((s) => s.hydrateFromSession)
+  const router = useRouter()
+
+  useEffect(() => {
+    hydrate()
+  }, [hydrate])
+
+  useEffect(() => {
+    if (user) {
+      router.replace('/books')
+    }
+  }, [user, router])
+
   return (
     <main className="grid md:grid-cols-2 min-h-screen">
       <section className="bg-splash-gradient text-white flex items-center justify-center p-8">
@@ -14,7 +32,7 @@ export default function Splash() {
           <Link href="/login" className="btn-primary w-full text-center">
             Log in
           </Link>
-          <Link href="/login" className="btn w-full text-center">
+          <Link href="/login" className="btn w-full text-center dark">
             Sign up
           </Link>
         </div>

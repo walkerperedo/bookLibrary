@@ -49,7 +49,7 @@ export default function BookCard({ b }: { b: Book }) {
   }
 
   return (
-    <div className="card p-3">
+    <div className="card p-3 flex flex-col">
       <Link href={href} className="block">
         <div className="aspect-[2/3] relative rounded-lg overflow-hidden bg-slate-100">
           {b.coverUrl ? (
@@ -70,7 +70,7 @@ export default function BookCard({ b }: { b: Book }) {
       </Link>
       <p className="text-xs text-slate-500 line-clamp-1">{b.authors?.[0] ?? 'Unknown'}</p>
 
-      <div className="mt-2 flex gap-2">
+      <div className="flex gap-2 flex-wrap mt-auto">
         <button className="btn flex-1" onClick={onToggleWishlist}>
           <span suppressHydrationWarning>{hydrated && hasWish ? 'In wishlist' : 'Wishlist'}</span>
         </button>

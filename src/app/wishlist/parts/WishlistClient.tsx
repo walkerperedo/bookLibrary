@@ -9,33 +9,32 @@ import { computeAvailability } from '@/modules/books/domain/availability'
 import { ensureNotifyPermission } from '@/lib/notify'
 import { useMemo } from 'react'
 import { useUser } from '@/modules/users/store/user.store'
+import { useHydrated } from '@/hooks/useHydrated'
+import WishlistRow from './WishlistRow'
 
 function workIdFromKey(id: string) {
   return id.startsWith('/works/') ? id.slice('/works/'.length) : id
 }
 
 export default function WishlistClient() {
-  const userKey = useUser((s) => (s.user ? `user:${s.user.id}` : 'guest'))
-  const itemsMap = useWishlist((s) => s.byUser[userKey] ?? {})
-  
-  const remove = useWishlist((s) => s.remove)
+  const hydrated = useHydrated()
 
-  const issue = useLoans((s) => s.issue)
-  const ret = useLoans((s) => s.return)
-  const isOnLoan = useLoans((s) => s.isOnLoan)
-
-  const reserve = useReservations((s) => s.reserve)
-  const isReservedActive = useReservations((s) => s.isReservedActive)
+  const userKeyRaw = useUser((s) => (s.user ? `user:${s.user.id}` : 'guest'))
+  const userKey = hydrated ? userKeyRaw : 'guest'
+  const itemsMap = useWishlist((s) => s.byUser[userKey])
 
   const items = useMemo(() => {
-    const arr = Object.values(itemsMap)
-    arr.sort((a, b) => b.addedAt.localeCompare(a.addedAt))
-    return arr
+    const m = itemsMap ?? {}
+    return Object.values(m).sort((a, b) => b.addedAt.localeCompare(a.addedAt))
   }, [itemsMap])
 
   async function enableNotifications() {
     const perm = await ensureNotifyPermission()
     if (perm !== 'granted') alert('Notifications blocked by the browser.')
+  }
+
+  if (!hydrated) {
+    return <div className="card p-6 text-slate-600">Loading…</div>
   }
 
   if (items.length === 0) {
@@ -63,51 +62,9 @@ export default function WishlistClient() {
       </div>
 
       <ul className="grid md:grid-cols-2 gap-4">
-        {items.map((it) => {
-          const available = computeAvailability(it.id, userKey)
-          const href = `/books/${workIdFromKey(it.id)}`
-
-          return (
-            <li key={it.id} className="card p-3 flex gap-3">
-              <Link href={href} className="w-20 h-28 relative rounded overflow-hidden bg-slate-100">
-                {it.coverUrl && <Image src={it.coverUrl} alt={it.title} fill className="object-cover" />}
-              </Link>
-
-              <div className="flex-1">
-                <Link href={href}>
-                  <h3 className="font-semibold line-clamp-2">{it.title}</h3>
-                </Link>
-                <p className="text-xs text-slate-500">Added: {new Date(it.addedAt).toLocaleDateString()}</p>
-
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {available === 'AVAILABLE' && (
-                    <button className="btn-primary" onClick={() => issue({ id: it.id, title: it.title, coverUrl: it.coverUrl })}>
-                      Borrow
-                    </button>
-                  )}
-                  {available === 'ON_LOAN_MINE' && (
-                    <button className="btn" onClick={() => ret(it.id)}>
-                      Return
-                    </button>
-                  )}
-                  {available === 'ON_LOAN_EXTERNAL' && (
-                    <button
-                      className="btn"
-                      onClick={() => !isReservedActive(it.id) && reserve({ id: it.id, title: it.title, coverUrl: it.coverUrl })}
-                      disabled={isReservedActive(it.id)}
-                      title={isReservedActive(it.id) ? 'Already reserved' : 'Reserve'}
-                    >
-                      {isReservedActive(it.id) ? 'Reserved' : 'Reserve'}
-                    </button>
-                  )}
-                  <button className="btn" onClick={() => remove(it.id)}>
-                    Remove
-                  </button>
-                </div>
-              </div>
-            </li>
-          )
-        })}
+        {items.map((it) => (
+          <WishlistRow key={it.id} it={it} userKey={userKey} />
+        ))}
       </ul>
     </div>
   )
