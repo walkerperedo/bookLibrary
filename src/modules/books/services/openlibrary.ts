@@ -12,7 +12,8 @@ export async function searchBooksAdvanced(params: { q?: string; author?: string;
   const { q, author, category, page = 1 } = params
   const query = buildQuery({ q, author, category })
   const url = `${OL}/search.json?q=${encodeURIComponent(query || 'the')}&page=${page}`
-  const res = await fetch(url, { next: { revalidate: 60 } }) // RSC cache/ISR
+  const res = await fetch(url, { next: { revalidate: 60 } })
+  console.log(res)
   if (!res.ok) throw new Error('OpenLibrary search failed')
   return res.json()
 }
