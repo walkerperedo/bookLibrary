@@ -192,7 +192,6 @@ export const useInventory = create<InvState>()(
         const item = get().items[bookId]
         if (!item) return true
         if (item.status === 'ON_LOAN' && item.loanedBy !== userKey) return false
-        console.log("item: ", item)
         const reservation = item.reservation
         if (!reservation || isPast(reservation.endAt)) return item.status === 'AVAILABLE'
 
