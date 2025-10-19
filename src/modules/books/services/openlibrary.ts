@@ -13,7 +13,6 @@ export async function searchBooksAdvanced(params: { q?: string; author?: string;
   const query = buildQuery({ q, author, category })
   const url = `${OL}/search.json?q=${encodeURIComponent(query || 'the')}&page=${page}`
   const res = await fetch(url, { next: { revalidate: 60 } })
-  
   if (!res.ok) throw new Error('OpenLibrary search failed')
   return res.json()
 }
