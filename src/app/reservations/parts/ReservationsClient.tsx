@@ -63,7 +63,7 @@ export default function ReservationsClient() {
                 Start: {fmt(r.startAt)} · {`Ends: : ${fmt(r.endAt)}`}
               </p>
               <div className="mt-2 flex gap-2">
-                <button className="btn-primary" onClick={() => borrowNow(r.id)} disabled={!canBorrowNow}>
+                <button className="btn-primary" onClick={() => borrowNow({id: r.id, title: r.title, coverUrl: r.coverUrl})} disabled={!canBorrowNow}>
                   Borrow now
                 </button>
                 <button className="btn" onClick={() => cancelReservation(r.id, userKey)}>

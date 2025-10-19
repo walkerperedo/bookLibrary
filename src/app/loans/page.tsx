@@ -9,7 +9,7 @@ export default function LoansPage() {
         <Header />
       </Suspense>
       <section className="max-w-6xl mx-auto p-4">
-        <h2 className="text-lg font-semibold mb-3">My loans</h2>
+        <h2 className="text-lg font-semibold mb-3 text-white">My Loans</h2>
         <LoansClient />
       </section>
     </main>

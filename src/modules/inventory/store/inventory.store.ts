@@ -31,10 +31,6 @@ function isFuture(d?: string) {
 function isPast(d?: string) {
   return !!d && new Date(d).getTime() < Date.now()
 }
-function clampStartAfterReturn(now: Date, startAtISO: string) {
-  const start = new Date(startAtISO)
-  return now.getTime() >= start.getTime() ? now : start
-}
 
 type InvState = {
   items: Record<string, InventoryItem>
@@ -105,7 +101,7 @@ export const useInventory = create<InvState>()(
 
           let reservation = it.reservation
           if (reservation) {
-            const newStart = clampStartAfterReturn(now, reservation.startAt)
+            const newStart = now
             const newEnd = addDays(newStart, 14)
             reservation = { ...reservation, startAt: newStart.toISOString(), endAt: newEnd.toISOString() }
           }
@@ -116,7 +112,7 @@ export const useInventory = create<InvState>()(
               [bookId]: {
                 id: bookId,
                 status: 'AVAILABLE',
-                reservation, // activa si existe
+                reservation,
               },
             },
           }
@@ -196,7 +192,7 @@ export const useInventory = create<InvState>()(
         const item = get().items[bookId]
         if (!item) return true
         if (item.status === 'ON_LOAN' && item.loanedBy !== userKey) return false
-
+        console.log("item: ", item)
         const reservation = item.reservation
         if (!reservation || isPast(reservation.endAt)) return item.status === 'AVAILABLE'
 

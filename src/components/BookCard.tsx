@@ -35,6 +35,7 @@ export default function BookCard({ b }: { b: Book }) {
   const reserveGlobal = useInventory((s) => s.reserve)
 
   const availability = hydrated ? computeAvailability(b.id, userKey) : 'AVAILABLE'
+  console.log(b.title, availability)
   const dueAt = inv?.dueAt || ''
   const hasReservation = Boolean(inv?.reservation && new Date(inv!.reservation!.endAt) > new Date())
   const reservedByOther = hasReservation && inv!.reservation!.reservedBy !== userKey

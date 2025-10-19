@@ -1,11 +1,7 @@
 'use client'
 
-import Image from 'next/image'
 import Link from 'next/link'
 import { useWishlist } from '@/modules/wishlist/store/wishlist.store'
-import { useLoans } from '@/modules/loans/store/loan.store'
-import { useReservations } from '@/modules/reservations/store/reservation.store'
-import { computeAvailability } from '@/modules/books/domain/availability'
 import { ensureNotifyPermission } from '@/lib/notify'
 import { useMemo } from 'react'
 import { useUser } from '@/modules/users/store/user.store'
@@ -56,7 +52,7 @@ export default function WishlistClient() {
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <p className="text-sm text-slate-600">Items: {items.length}</p>
-        <button className="btn" onClick={enableNotifications}>
+        <button className="btn dark" onClick={enableNotifications}>
           Enable notifications
         </button>
       </div>

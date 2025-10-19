@@ -29,7 +29,7 @@ export default async function BookDetailsPage({ params }: PageProps) {
       <section className="max-w-6xl mx-auto p-4">
         <div className="grid md:grid-cols-[240px,1fr] gap-6">
           {/* Portada */}
-          <div className="card p-3">
+          <div className="card p-3 max-w-[300px]">
             <div className="relative w-full aspect-[2/3] bg-slate-100 rounded-lg overflow-hidden">
               {coverUrl ? (
                 <Image src={coverUrl} alt={title} fill className="object-cover" />
@@ -41,7 +41,7 @@ export default async function BookDetailsPage({ params }: PageProps) {
 
           {/* Información principal */}
           <div className="space-y-4">
-            <h1 className="text-2xl font-semibold">{title}</h1>
+            <h1 className="text-2xl font-semibold text-white">{title}</h1>
             <p className="text-sm text-slate-600">
               {authors.filter(Boolean).join(', ') || 'Unknown author'} {year ? `· ${year}` : ''}
             </p>
@@ -57,13 +57,13 @@ export default async function BookDetailsPage({ params }: PageProps) {
             )}
 
             {description && (
-              <div className="prose prose-sm max-w-none">
+              <div className="prose prose-sm max-w-none text-white">
                 <p className="whitespace-pre-wrap">{description}</p>
               </div>
             )}
 
             {/* Rastreador de lectura */}
-            <ReadingTracker workId={workId} title={title} coverUrl={coverUrl ?? undefined} />
+            {/* <ReadingTracker workId={workId} title={title} coverUrl={coverUrl ?? undefined} /> */}
           </div>
         </div>
       </section>

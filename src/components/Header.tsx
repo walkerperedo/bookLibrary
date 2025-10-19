@@ -55,7 +55,7 @@ export default function Header() {
           <input className="input w-full" placeholder="Search books..." value={q} onChange={(e) => setQ(e.target.value)} />
         </form>
 
-        <nav className="hidden max-[1000px]:hidden flex items-center gap-3">
+        <nav className="max-[1000px]:hidden flex items-center gap-3">
           <Link href="/books" className="btn">
             Catalog
           </Link>
@@ -108,12 +108,10 @@ export default function Header() {
             className="overflow-hidden border-t border-slate-200 bg-white/95 backdrop-blur max-[1000px]:block hidden"
           >
             <div className="flex flex-col gap-3 p-4">
-              {/* Search visible in mobile */}
               <form onSubmit={onSubmit}>
                 <input className="input w-full" placeholder="Search books..." value={q} onChange={(e) => setQ(e.target.value)} />
               </form>
 
-              {/* Navigation */}
               <Link href="/books" className="btn w-full">
                 Catalog
               </Link>

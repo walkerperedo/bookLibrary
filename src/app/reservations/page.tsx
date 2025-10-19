@@ -9,7 +9,7 @@ export default function ReservationsPage() {
         <Header />
       </Suspense>
       <section className="max-w-6xl mx-auto p-4">
-        <h2 className="text-lg font-semibold mb-3">Reservations</h2>
+        <h2 className="text-lg font-semibold mb-3 text-white">Reservations</h2>
         <ReservationsClient />
       </section>
     </main>
