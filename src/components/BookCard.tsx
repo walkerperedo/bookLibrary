@@ -30,15 +30,14 @@ export default function BookCard({ b }: { b: Book }) {
   const renew = useLoans((s) => s.renew)
   const ret = useLoans((s) => s.return)
 
-  const resEntry = useReservations((s) => s.byUser[userKey]?.[b.id])
-  const isReservedRaw = !!resEntry && !resEntry.cancelledAt && !resEntry.fulfilledAt
-  const isReserved = hydrated ? isReservedRaw : false
-  const reserve = useReservations((s) => s.reserve)
-
-  const inv = useInventory((s) => s.items[b.id])
-  const dueAt = inv?.dueAt || ''
+  const inv = useInventory((s) => s.getItem(b.id))
+  const canBorrow = useInventory((s) => s.canBorrow(b.id, userKey))
+  const reserveGlobal = useInventory((s) => s.reserve)
 
   const availability = hydrated ? computeAvailability(b.id, userKey) : 'AVAILABLE'
+  const dueAt = inv?.dueAt || ''
+  const hasReservation = Boolean(inv?.reservation && new Date(inv!.reservation!.endAt) > new Date())
+  const reservedByOther = hasReservation && inv!.reservation!.reservedBy !== userKey
 
   const setReadingStatus = useReading((s) => s.setStatus)
   const href = `/books/${workIdFromKey(b.id)}`
@@ -75,7 +74,7 @@ export default function BookCard({ b }: { b: Book }) {
           <span suppressHydrationWarning>{hydrated && hasWish ? 'In wishlist' : 'Wishlist'}</span>
         </button>
 
-        {hydrated && availability === 'AVAILABLE' && (
+        {hydrated && availability === 'AVAILABLE' && canBorrow && (
           <button className="btn-primary flex-1" onClick={() => issue(b)}>
             Borrow
           </button>
@@ -92,9 +91,19 @@ export default function BookCard({ b }: { b: Book }) {
           </>
         )}
 
-        {hydrated && availability === 'ON_LOAN_EXTERNAL' && (
-          <button className="btn flex-1" onClick={() => !isReserved && reserve(b)} disabled={isReserved}>
-            <span suppressHydrationWarning>{isReserved ? 'Reserved' : 'Reserve'}</span>
+        {hydrated && availability === 'ON_LOAN_EXTERNAL' && !hasReservation && (
+          <button
+            className="btn flex-1"
+            onClick={() => reserveGlobal({ id: b.id, title: b.title, coverUrl: b.coverUrl }, userKey)}
+            disabled={hasReservation}
+          >
+            Reserve
+          </button>
+        )}
+
+        {hydrated && (reservedByOther || (hasReservation && availability === 'ON_LOAN_EXTERNAL')) && (
+          <button className="btn flex-1" disabled>
+            Reserved
           </button>
         )}
       </div>

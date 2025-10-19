@@ -6,6 +6,11 @@
   --radius: 10px;
 }
 
+button:disabled {
+    background-color: rgba(239, 239, 239, 0.3);
+    color: rgba(16, 16, 16, 0.3);
+    border-color: rgba(118, 118, 118, 0.3);
+}
 
 body {
   background-color: #fff;
@@ -39,7 +44,7 @@ body {
   background-color: #3b82f6; /* brand-500, adjust as needed */
   transition: background 0.2s;
 }
-.btn-primary:hover {
+.btn-primary:hover:not(:disabled) {
   background-color: #2563eb; /* brand-600, adjust as needed */
 }
 
